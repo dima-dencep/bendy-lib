@@ -6,10 +6,15 @@
   "client": [
     "CuboidMutator",
     "IModelPartMixin",
-    "QuadMixin"
+    "QuadMixin",
+    "sodium.CuboidMixin"
   ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "sodium.EntityRendererMixin",
+    "sodium.ModelCuboidMixin"
+  ]
 }

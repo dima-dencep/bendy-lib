@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-@Mixin(ModelPart.class)
+@Mixin(value = ModelPart.class, priority = 999)
 public abstract class IModelPartMixin implements IModelPartAccessor {
 
     @Shadow @Final private Map<String, ModelPart> children;
@@ -26,6 +26,9 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     @Unique
     private boolean hasMutatedCuboid = false;
+
+    @Unique
+    private VertexConsumer getVertexConsumer = null;
     /**
      * VanillaDraw won't cause slowdown in vanilla and will fix many issues.
      * If needed, use {@link IModelPartAccessor#setWorkaround(ModelPartAccessor.Workaround)} to set the workaround function
@@ -58,6 +61,16 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
             cuboid1.copyStateFrom(cuboid0);
         }
 
+    }
+
+    @Inject(
+            method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V",
+            at = @At(
+                    value = "HEAD"
+            )
+    )
+    public void dfgfdgdf(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo ci) {
+        getVertexConsumer = vertices;
     }
 
     @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V"), require = 0) //It might not find anything if OF already broke the game
@@ -100,5 +113,20 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
     @Override
     public void setWorkaround(ModelPartAccessor.Workaround workaround) {
         this.workaround = workaround;
+    }
+
+    @Override
+    public ModelPartAccessor.Workaround getWorkaround() {
+        return workaround;
+    }
+
+    @Override
+    public boolean hasMutatedCuboid() {
+        return hasMutatedCuboid;
+    }
+
+    @Override
+    public VertexConsumer getVertexConsumer() {
+        return getVertexConsumer;
     }
 }

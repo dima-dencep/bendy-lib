@@ -13,6 +13,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
     modCompileOnly("maven.modrinth:3dskinlayers:1.5.2-1.19.3-fabric") //TODO
+    modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.8")
 }
 
 sourceSets {

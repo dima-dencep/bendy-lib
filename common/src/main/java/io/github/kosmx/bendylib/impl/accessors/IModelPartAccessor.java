@@ -2,6 +2,7 @@ package io.github.kosmx.bendylib.impl.accessors;
 
 import io.github.kosmx.bendylib.ModelPartAccessor;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.VertexConsumer;
 
 import java.util.List;
 import java.util.Map;
@@ -17,4 +18,9 @@ public interface IModelPartAccessor {
 
     void setWorkaround(ModelPartAccessor.Workaround workaround);
 
+    ModelPartAccessor.Workaround getWorkaround();
+
+    VertexConsumer getVertexConsumer();
+
+    boolean hasMutatedCuboid();
 }

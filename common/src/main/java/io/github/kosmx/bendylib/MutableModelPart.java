@@ -32,18 +32,18 @@ public abstract class MutableModelPart extends ModelPart {
 
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-        super.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+        super.render(matrices, vertices, light, overlay);
         if(!iCuboids.isEmpty()){
             matrices.push();
             this.rotate(matrices);
-            this.renderICuboids(matrices.peek(), vertices, light, overlay, red, green, blue, alpha);
+            this.renderICuboids(matrices.peek(), vertices, light, overlay, color);
             matrices.pop();
         }
     }
 
-    protected void renderICuboids(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
-        this.iCuboids.forEach((cuboid)-> cuboid.render(matrices, vertexConsumer, red, green, blue, alpha, light, overlay));
+    protected void renderICuboids(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+        this.iCuboids.forEach((cuboid)-> cuboid.render(matrices, vertexConsumer, light, overlay, color));
     }
 
     public void addICuboid(ICuboid cuboid){

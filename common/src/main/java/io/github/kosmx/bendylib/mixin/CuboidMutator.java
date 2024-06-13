@@ -138,9 +138,9 @@ public class CuboidMutator implements MutableCuboid, CuboidSideAccessor {
     }
 
     @Inject(method = "renderCuboid", at = @At(value = "HEAD"), cancellable = true)
-    private void renderRedirect(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo ci){
+    private void renderRedirect(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color, CallbackInfo ci){
         if(getActiveMutator() != null){
-            getActiveMutator().getRight().render(entry, vertexConsumer, red, green, blue, alpha, light, overlay);
+            getActiveMutator().getRight().render(entry, vertexConsumer, light, overlay, color);
             if(getActiveMutator().getRight().disableAfterDraw()) {
                 activeMutator = null; //mutator lives only for one render cycle
                 activeMutatorID = null;

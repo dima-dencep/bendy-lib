@@ -15,18 +15,14 @@ public interface ICuboid {
 
     /**
      * See {@link BendableCuboid#render(MatrixStack.Entry, VertexConsumer, float, float, float, float, int, int)} how to do it
-     * Or you can check the original MC code {@link net.minecraft.client.model.ModelPart#render(MatrixStack, VertexConsumer, int, int, float, float, float, float)}
+     * Or you can check the original MC code {@link net.minecraft.client.model.ModelPart#render(MatrixStack, VertexConsumer, int, int)}
      *
      * @param matrices Minecraft's Matrix transformation
      * @param vertexConsumer Minecraft Vertex consumer, add vertices to render
-     * @param red red
-     * @param green green
-     * @param blue blue
-     * @param alpha alpha
      * @param light light
      * @param overlay overlay
      */
-    void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light, int overlay);
+    void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color);
 
     /**
      * Copy custom state from another cuboid

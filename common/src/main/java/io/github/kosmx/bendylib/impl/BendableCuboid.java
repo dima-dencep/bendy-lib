@@ -261,9 +261,9 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
     }
 
     @Override
-    public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light, int overlay) {
+    public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         for(Quad quad:sides){
-            quad.render(matrices, vertexConsumer, light, overlay, red, green, blue, alpha);
+            quad.render(matrices, vertexConsumer, light, overlay, color);
         }
     }
 
@@ -305,7 +305,7 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
                 }
             }
         }
-        public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha){
+        public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color){
             Vector3f direction = this.getDirection();
             direction.mul(matrices.getNormalMatrix());
 
@@ -314,7 +314,7 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
                 Vector3f vertexPos = vertex.getPos();
                 Vector4f pos = new Vector4f(vertexPos.x/16f, vertexPos.y/16f, vertexPos.z/16f, 1);
                 pos.mul(matrices.getPositionMatrix());
-                vertexConsumer.vertex(pos.x, pos.y, pos.z, red, green, blue, alpha, vertex.getU(), vertex.getV(), overlay, light, direction.x, direction.y, direction.z);
+                vertexConsumer.vertex(pos.x, pos.y, pos.z, color, vertex.getU(), vertex.getV(), overlay, light, direction.x, direction.y, direction.z);
             }
         }
 

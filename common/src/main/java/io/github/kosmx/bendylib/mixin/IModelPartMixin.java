@@ -33,7 +33,7 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
      */
     private ModelPartAccessor.Workaround workaround = ModelPartAccessor.Workaround.VanillaDraw;
 
-    @Shadow protected abstract void renderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha);
+    @Shadow protected abstract void renderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color);
 
     @Override
     public List<ModelPart.Cuboid> getCuboids() {
@@ -60,40 +60,41 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     }
 
-    @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V"), require = 0) //It might not find anything if OF already broke the game
-    private void redirectRenderCuboids(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha){
-        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+    @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
+    private void redirectRenderCuboids(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color){
+        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color);
     }
 
+    /* // check what they do here
     @Dynamic("render function is replaced with this by Optifine")
     @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;IIFFFFZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;IIFFFF)V"), require = 0)
     private void redirectOF(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
         redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, red, green, blue, alpha);
-    }
+    }*/
 
     @Unique
-    private void redirectedFunction(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
+    private void redirectedFunction(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         if(workaround == ModelPartAccessor.Workaround.ExportQuads){
             for(ModelPart.Cuboid cuboid:cuboids){
                 ((CuboidSideAccessor)cuboid).doSideSwapping(); //:D
             }
-            renderCuboids(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+            renderCuboids(entry, vertexConsumer, light, overlay, color);
             for(ModelPart.Cuboid cuboid:cuboids){
                 ((CuboidSideAccessor)cuboid).resetSides(); //:D
             }
         }
         else if(workaround == ModelPartAccessor.Workaround.VanillaDraw){
             if(!hasMutatedCuboid || cuboids.size() == 1 && ((MutableCuboid)cuboids.get(0)).getActiveMutator() == null){
-                renderCuboids(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+                renderCuboids(entry, vertexConsumer, light, overlay, color);
             }
             else {
                 for(ModelPart.Cuboid cuboid:cuboids){
-                    cuboid.renderCuboid(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+                    cuboid.renderCuboid(entry, vertexConsumer, light, overlay, color);
                 }
             }
         }
         else {
-            renderCuboids(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+            renderCuboids(entry, vertexConsumer, light, overlay, color);
         }
     }
 

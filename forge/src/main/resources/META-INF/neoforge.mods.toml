@@ -10,8 +10,7 @@ displayURL = "https://github.com/KosmX/bendy-lib"
 displayName = "Bendy lib"
 authors = "KosmX"
 description = '''
-Bendy API ported to Forge
-But you should use Fabric or Quilt
+Bending model parts
 '''
 #logoFile = ""
 
@@ -22,6 +21,6 @@ config = "bendylib.mixins.json"
 modId = "minecraft"
 type = "required"
 mandatory = true
-versionRange = "[1.20.2,)"
+versionRange = "[1.21,)"
 ordering = "NONE"
 side = "CLIENT"

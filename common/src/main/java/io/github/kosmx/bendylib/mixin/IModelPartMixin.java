@@ -1,5 +1,7 @@
 package io.github.kosmx.bendylib.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.github.kosmx.bendylib.ModelPartAccessor;
 import io.github.kosmx.bendylib.MutableCuboid;
 import io.github.kosmx.bendylib.impl.accessors.CuboidSideAccessor;
@@ -10,7 +12,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Iterator;
@@ -32,8 +33,6 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
      * {@link ModelPartAccessor.Workaround#None} to do nothing about it. It will work in Vanilla, but not with Sodium/OF
      */
     private ModelPartAccessor.Workaround workaround = ModelPartAccessor.Workaround.VanillaDraw;
-
-    @Shadow protected abstract void renderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color);
 
     @Override
     public List<ModelPart.Cuboid> getCuboids() {
@@ -60,9 +59,9 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     }
 
-    @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
-    private void redirectRenderCuboids(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color){
-        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color);
+    @WrapOperation(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
+    private void redirectRenderCuboids(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color, Operation<Void> original){
+        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color, original);
     }
 
     /* // check what they do here
@@ -73,19 +72,19 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
     }*/
 
     @Unique
-    private void redirectedFunction(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+    private void redirectedFunction(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color, Operation<Void> original) {
         if(workaround == ModelPartAccessor.Workaround.ExportQuads){
             for(ModelPart.Cuboid cuboid:cuboids){
                 ((CuboidSideAccessor)cuboid).doSideSwapping(); //:D
             }
-            renderCuboids(entry, vertexConsumer, light, overlay, color);
+            original.call(modelPart, entry, vertexConsumer, light, overlay, color);
             for(ModelPart.Cuboid cuboid:cuboids){
                 ((CuboidSideAccessor)cuboid).resetSides(); //:D
             }
         }
         else if(workaround == ModelPartAccessor.Workaround.VanillaDraw){
             if(!hasMutatedCuboid || cuboids.size() == 1 && ((MutableCuboid)cuboids.get(0)).getActiveMutator() == null){
-                renderCuboids(entry, vertexConsumer, light, overlay, color);
+                original.call(modelPart, entry, vertexConsumer, light, overlay, color);
             }
             else {
                 for(ModelPart.Cuboid cuboid:cuboids){
@@ -94,7 +93,7 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
             }
         }
         else {
-            renderCuboids(entry, vertexConsumer, light, overlay, color);
+            original.call(modelPart, entry, vertexConsumer, light, overlay, color);
         }
     }
 

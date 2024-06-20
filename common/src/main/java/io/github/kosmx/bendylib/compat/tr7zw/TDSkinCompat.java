@@ -8,8 +8,8 @@ import io.github.kosmx.bendylib.impl.BendableCuboid;
 import io.github.kosmx.bendylib.impl.IBendable;
 import io.github.kosmx.bendylib.impl.IPosWithOrigin;
 import io.github.kosmx.bendylib.impl.RememberingPos;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.core.Direction;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class TDSkinCompat {
             var sourceCuboidOptional = ModelPartAccessor.optionalGetCuboid(modelPart, 0);
             if (sourceCuboidOptional.isPresent()
                     && sourceCuboidOptional.get().getActiveMutator() != null
-                    && sourceCuboidOptional.get().getActiveMutator().getRight() instanceof BendableCuboid bendableSource) {
+                    && sourceCuboidOptional.get().getActiveMutator().getB() instanceof BendableCuboid bendableSource) {
 
 
                 class Bender extends BendyMeshTransformer implements MeshTransformer {
@@ -51,13 +51,13 @@ public class TDSkinCompat {
                     }
 
                     @Override
-                    public void transform(ModelPart.Cuboid cuboid) {
+                    public void transform(ModelPart.Cube cuboid) {
                         var sourceCuboid = sourceCuboidOptional.get();
                         var mutator = sourceCuboidOptional.get().getActiveMutator();
 
                         if (cuboid instanceof MutableCuboid mutableCuboid) {
-                            if (!mutableCuboid.hasMutator(mutator.getLeft())) {
-                                mutableCuboid.registerMutator(mutator.getLeft(),
+                            if (!mutableCuboid.hasMutator(mutator.getA())) {
+                                mutableCuboid.registerMutator(mutator.getA(),
                                         data -> new BendableCuboid.Builder().setDirection(getBendDirection()).build(data,
                                                 (sides, positions, minX, minY, minZ, maxX, maxY, maxZ, fixX, fixY, fixZ,
                                                  direction, basePlane, otherPlane, fullSize) ->
@@ -80,7 +80,7 @@ public class TDSkinCompat {
                 }
 
                 @Override
-                public void transform(ModelPart.Cuboid cuboid) {
+                public void transform(ModelPart.Cube cuboid) {
                     ((MutableCuboid) cuboid).getAndActivateMutator(null);
                 }
             };
@@ -99,7 +99,7 @@ public class TDSkinCompat {
         vecA.add(buf);
         vecA.cross(vecB);
         //Return the cross product, if it's zero then return anything non-zero to not cause crash...
-        return vecA.normalize().isFinite() ? vecA : Direction.NORTH.getUnitVector();
+        return vecA.normalize().isFinite() ? vecA : Direction.NORTH.step();
     }
 
     private static class ModifiedBendableCuboid extends BendableCuboid {

@@ -1,6 +1,6 @@
 package io.github.kosmx.bendylib.impl;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 import org.joml.Vector3f;
 
 /**

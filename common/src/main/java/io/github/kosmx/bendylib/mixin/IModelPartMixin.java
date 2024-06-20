@@ -1,12 +1,12 @@
 package io.github.kosmx.bendylib.mixin;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kosmx.bendylib.ModelPartAccessor;
 import io.github.kosmx.bendylib.MutableCuboid;
 import io.github.kosmx.bendylib.impl.accessors.CuboidSideAccessor;
 import io.github.kosmx.bendylib.impl.accessors.IModelPartAccessor;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,7 +22,10 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     @Shadow @Final private Map<String, ModelPart> children;
 
-    @Shadow @Final private List<ModelPart.Cuboid> cuboids;
+
+    @Shadow @Final private List<ModelPart.Cube> cubes;
+
+    @Shadow protected abstract void compile(PoseStack.Pose arg, VertexConsumer arg2, int i, int j, int k);
 
     @Unique
     private boolean hasMutatedCuboid = false;
@@ -33,12 +36,11 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
      */
     private ModelPartAccessor.Workaround workaround = ModelPartAccessor.Workaround.VanillaDraw;
 
-    @Shadow protected abstract void renderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color);
 
     @Override
-    public List<ModelPart.Cuboid> getCuboids() {
+    public List<ModelPart.Cube> getCuboids() {
         hasMutatedCuboid = true;
-        return cuboids;
+        return cubes;
     }
 
     @Override
@@ -46,11 +48,11 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
         return children;
     }
 
-    @Inject(method = "copyTransform", at = @At("RETURN"))
+    @Inject(method = "copyFrom", at = @At("RETURN"))
     private void copyTransformExtended(ModelPart part, CallbackInfo ci){
-        if(((IModelPartAccessor)part).getCuboids() == null || cuboids == null) return; // Not copying state
-        Iterator<ModelPart.Cuboid> iterator0 = ((IModelPartAccessor)part).getCuboids().iterator();
-        Iterator<ModelPart.Cuboid> iterator1 = cuboids.iterator();
+        if(((IModelPartAccessor)part).getCuboids() == null || cubes == null) return; // Not copying state
+        Iterator<ModelPart.Cube> iterator0 = ((IModelPartAccessor)part).getCuboids().iterator();
+        Iterator<ModelPart.Cube> iterator1 = cubes.iterator();
 
         while (iterator0.hasNext() && iterator1.hasNext()){
             MutableCuboid cuboid1 = (MutableCuboid) iterator1.next();
@@ -60,8 +62,8 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     }
 
-    @Redirect(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ModelPart;renderCuboids(Lnet/minecraft/client/util/math/MatrixStack$Entry;Lnet/minecraft/client/render/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
-    private void redirectRenderCuboids(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color){
+    @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/geom/ModelPart;compile(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
+    private void redirectRenderCuboids(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color){
         redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color);
     }
 
@@ -73,28 +75,28 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
     }*/
 
     @Unique
-    private void redirectedFunction(ModelPart modelPart, MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+    private void redirectedFunction(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         if(workaround == ModelPartAccessor.Workaround.ExportQuads){
-            for(ModelPart.Cuboid cuboid:cuboids){
+            for(ModelPart.Cube cuboid:cubes){
                 ((CuboidSideAccessor)cuboid).doSideSwapping(); //:D
             }
-            renderCuboids(entry, vertexConsumer, light, overlay, color);
-            for(ModelPart.Cuboid cuboid:cuboids){
+            compile(entry, vertexConsumer, light, overlay, color);
+            for(ModelPart.Cube cuboid:cubes){
                 ((CuboidSideAccessor)cuboid).resetSides(); //:D
             }
         }
         else if(workaround == ModelPartAccessor.Workaround.VanillaDraw){
-            if(!hasMutatedCuboid || cuboids.size() == 1 && ((MutableCuboid)cuboids.get(0)).getActiveMutator() == null){
-                renderCuboids(entry, vertexConsumer, light, overlay, color);
+            if(!hasMutatedCuboid || cubes.size() == 1 && ((MutableCuboid)cubes.get(0)).getActiveMutator() == null){
+                compile(entry, vertexConsumer, light, overlay, color);
             }
             else {
-                for(ModelPart.Cuboid cuboid:cuboids){
-                    cuboid.renderCuboid(entry, vertexConsumer, light, overlay, color);
+                for(ModelPart.Cube cuboid:cubes){
+                    cuboid.compile(entry, vertexConsumer, light, overlay, color);
                 }
             }
         }
         else {
-            renderCuboids(entry, vertexConsumer, light, overlay, color);
+            compile(entry, vertexConsumer, light, overlay, color);
         }
     }
 

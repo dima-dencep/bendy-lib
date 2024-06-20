@@ -1,7 +1,7 @@
 package io.github.kosmx.bendylib;
 
 import io.github.kosmx.bendylib.impl.ICuboid;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Nullable;
 
 public interface MutableCuboid {
@@ -26,7 +26,7 @@ public interface MutableCuboid {
      * @return null, if no active
      */
     @Nullable
-    Pair<String, ICuboid> getActiveMutator();
+    Tuple<String, ICuboid> getActiveMutator();
 
     /**
      * Check if mutator with key exists

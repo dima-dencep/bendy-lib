@@ -1,11 +1,11 @@
 package io.github.kosmx.bendylib.impl;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kosmx.bendylib.ICuboidBuilder;
 import io.github.kosmx.bendylib.impl.accessors.DirectionMutator;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.*;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.core.Direction;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -181,10 +181,10 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
             createAndAddQuads(planes, positions, new Vector3f[]{vertex6, vertex2, vertex7}, l, q, n, r, data.textureWidth, data.textureHeight, data.mirror, data);
             createAndAddQuads(planes, positions, new Vector3f[]{vertex5, vertex6, vertex8}, n, q, o, r, data.textureWidth, data.textureHeight, data.mirror, data);
 
-            Plane aPlane = new Plane(direction.getUnitVector(), vertex7);
-            Plane bPlane = new Plane(direction.getUnitVector(), vertex1);
+            Plane aPlane = new Plane(direction.step(), vertex7);
+            Plane bPlane = new Plane(direction.step(), vertex1);
             boolean bl = direction == Direction.UP || direction == Direction.SOUTH || direction == Direction.EAST;
-            float fullSize = - direction.getUnitVector().dot(vertex1) + direction.getUnitVector().dot(vertex7);
+            float fullSize = - direction.step().dot(vertex1) + direction.step().dot(vertex7);
             float bendX = ((float) data.sizeX + data.x + data.x)/2;
             float bendY = ((float) data.sizeY + data.y + data.y)/2;
             float bendZ = ((float) data.sizeZ + data.z + data.z)/2;
@@ -261,7 +261,7 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
     }
 
     @Override
-    public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+    public void render(PoseStack.Pose matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         for(Quad quad:sides){
             quad.render(matrices, vertexConsumer, light, overlay, color);
         }
@@ -305,16 +305,16 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
                 }
             }
         }
-        public void render(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color){
+        public void render(PoseStack.Pose matrices, VertexConsumer vertexConsumer, int light, int overlay, int color){
             Vector3f direction = this.getDirection();
-            direction.mul(matrices.getNormalMatrix());
+            direction.mul(matrices.normal());
 
             for (int i = 0; i != 4; ++i){
                 IVertex vertex = this.vertices[i];
                 Vector3f vertexPos = vertex.getPos();
                 Vector4f pos = new Vector4f(vertexPos.x/16f, vertexPos.y/16f, vertexPos.z/16f, 1);
-                pos.mul(matrices.getPositionMatrix());
-                vertexConsumer.vertex(pos.x, pos.y, pos.z, color, vertex.getU(), vertex.getV(), overlay, light, direction.x, direction.y, direction.z);
+                pos.mul(matrices.pose());
+                vertexConsumer.addVertex(pos.x, pos.y, pos.z, color, vertex.getU(), vertex.getV(), overlay, light, direction.x, direction.y, direction.z);
             }
         }
 
@@ -333,18 +333,18 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
             vecA.add(buf);
             vecA.cross(vecB);
             // Return the cross product, if it's zero then return anything non-zero to not cause crash...
-            return vecA.normalize().isFinite() ? vecA : Direction.NORTH.getUnitVector();
+            return vecA.normalize().isFinite() ? vecA : Direction.NORTH.step();
         }
 
         @SuppressWarnings({"ConstantConditions"})
-        private ModelPart.Quad toModelPart_Quad(){
-            ModelPart.Quad quad = new ModelPart.Quad(new ModelPart.Vertex[]{
+        private ModelPart.Polygon toModelPart_Quad(){
+            ModelPart.Polygon quad = new ModelPart.Polygon(new ModelPart.Vertex[]{
                     vertices[0].toMojVertex(),
                     vertices[1].toMojVertex(),
                     vertices[2].toMojVertex(),
                     vertices[3].toMojVertex()
             }, u1, v1, u2, v2, su, sv, false, Direction.UP);
-            ((DirectionMutator)quad).setDirection(this.getDirection());
+            ((DirectionMutator)quad).bendy_lib$setDirection(this.getDirection());
             return quad;
         }
     }
@@ -355,8 +355,8 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
     }
 
     @Override
-    public List<ModelPart.Quad> getQuads() {
-        List<ModelPart.Quad> sides = new ArrayList<>();
+    public List<ModelPart.Polygon> getQuads() {
+        List<ModelPart.Polygon> sides = new ArrayList<>();
         for(Quad quad : this.sides){
             sides.add(quad.toModelPart_Quad());
         }

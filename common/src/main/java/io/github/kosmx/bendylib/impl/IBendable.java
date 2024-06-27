@@ -1,6 +1,6 @@
 package io.github.kosmx.bendylib.impl;
 
-import net.minecraft.util.math.*;
+import net.minecraft.core.Direction;
 import org.joml.*;
 
 import java.lang.Math;
@@ -20,7 +20,7 @@ public interface IBendable {
      */
     default Matrix4f applyBend(float bendAxis, float bendValue, IterableRePos posSupplier){
         Vector3f axis = new Vector3f((float) Math.cos(bendAxis), 0, (float) Math.sin(bendAxis));
-        Matrix3f matrix3f = new Matrix3f().set(getBendDirection().getRotationQuaternion());
+        Matrix3f matrix3f = new Matrix3f().set(getBendDirection().getRotation());
         axis.mul(matrix3f);
         Matrix4f transformMatrix = new Matrix4f();
 
@@ -34,7 +34,7 @@ public interface IBendable {
         Plane basePlane = getBasePlane();
         Plane otherPlane = getOtherSidePlane();
 
-        directionUnit = this.getBendDirection().getUnitVector();
+        directionUnit = this.getBendDirection().step();
         directionUnit.cross(axis);
         //parallel to the bend's axis and to the cube's bend direction
         Plane bendPlane = new Plane(directionUnit, new Vector3f(this.getBendX(), this.getBendY(), this.getBendZ()));
@@ -48,7 +48,7 @@ public interface IBendable {
             float distFromBase = basePlane.distanceTo(newPos);
             float distFromOther = otherPlane.distanceTo(newPos);
             double s = Math.tan(bendValue/2)*distFromBend;
-            Vector3f x = getBendDirection().getUnitVector();
+            Vector3f x = getBendDirection().step();
             if(Math.abs(distFromBase) < Math.abs(distFromOther)){
                 x.mul((float) (-distFromBase/halfSize*s));
                 newPos.add(x);

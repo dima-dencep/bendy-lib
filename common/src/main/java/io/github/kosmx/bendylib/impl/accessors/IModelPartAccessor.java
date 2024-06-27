@@ -1,7 +1,7 @@
 package io.github.kosmx.bendylib.impl.accessors;
 
 import io.github.kosmx.bendylib.ModelPartAccessor;
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface IModelPartAccessor {
 
-    List<ModelPart.Cuboid> getCuboids();
+    List<ModelPart.Cube> getCuboids();
 
     Map<String, ModelPart> getChildren(); //easy to search in it :D
 

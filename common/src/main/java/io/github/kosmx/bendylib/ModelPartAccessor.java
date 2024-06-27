@@ -2,7 +2,7 @@ package io.github.kosmx.bendylib;
 
 import io.github.kosmx.bendylib.impl.DummyCuboid;
 import io.github.kosmx.bendylib.impl.accessors.IModelPartAccessor;
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ import java.util.*;
  */
 public final class ModelPartAccessor {
 
-    public static Map<String,ModelPart> getChildren(ModelPart modelPart){
+    public static Map<String, ModelPart> getChildren(ModelPart modelPart){
         return ((IModelPartAccessor)modelPart).getChildren();
     }
 
@@ -41,7 +41,7 @@ public final class ModelPartAccessor {
         return Optional.of((MutableCuboid)getCuboids(modelPart).get(index));
     }
 
-    public static List<ModelPart.Cuboid> getCuboids(ModelPart modelPart){
+    public static List<ModelPart.Cube> getCuboids(ModelPart modelPart){
         return ((IModelPartAccessor)modelPart).getCuboids();
     }
 

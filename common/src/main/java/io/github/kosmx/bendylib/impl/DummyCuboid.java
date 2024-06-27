@@ -2,7 +2,7 @@ package io.github.kosmx.bendylib.impl;
 
 import io.github.kosmx.bendylib.ICuboidBuilder;
 import io.github.kosmx.bendylib.MutableCuboid;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,7 @@ public class DummyCuboid implements MutableCuboid {
 
     @Nullable
     @Override
-    public Pair<String, ICuboid> getActiveMutator() {
+    public Tuple<String, ICuboid> getActiveMutator() {
         return null;
     }
 

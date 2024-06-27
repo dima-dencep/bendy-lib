@@ -1,11 +1,11 @@
 package io.github.kosmx.bendylib;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kosmx.bendylib.impl.ICuboid;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.model.geom.ModelPart;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -26,23 +26,23 @@ public abstract class MutableModelPart extends ModelPart {
 
     protected final ObjectList<ICuboid> iCuboids = new ObjectArrayList<>();
 
-    public MutableModelPart(List<Cuboid> cuboids, Map<String, ModelPart> children) {
+    public MutableModelPart(List<Cube> cuboids, Map<String, ModelPart> children) {
         super(cuboids, children);
     }
 
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+    public void render(PoseStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         super.render(matrices, vertices, light, overlay);
         if(!iCuboids.isEmpty()){
-            matrices.push();
-            this.rotate(matrices);
-            this.renderICuboids(matrices.peek(), vertices, light, overlay, color);
-            matrices.pop();
+            matrices.pushPose();
+            this.translateAndRotate(matrices);
+            this.renderICuboids(matrices.last(), vertices, light, overlay, color);
+            matrices.popPose();
         }
     }
 
-    protected void renderICuboids(MatrixStack.Entry matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+    protected void renderICuboids(PoseStack.Pose matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         this.iCuboids.forEach((cuboid)-> cuboid.render(matrices, vertexConsumer, light, overlay, color));
     }
 

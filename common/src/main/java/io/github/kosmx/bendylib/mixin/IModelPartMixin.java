@@ -1,5 +1,7 @@
 package io.github.kosmx.bendylib.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kosmx.bendylib.ModelPartAccessor;
@@ -10,7 +12,6 @@ import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Iterator;
@@ -35,7 +36,6 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
      * {@link ModelPartAccessor.Workaround#None} to do nothing about it. It will work in Vanilla, but not with Sodium/OF
      */
     private ModelPartAccessor.Workaround workaround = ModelPartAccessor.Workaround.VanillaDraw;
-
 
     @Override
     public List<ModelPart.Cube> getCuboids() {
@@ -62,9 +62,9 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
 
     }
 
-    @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/geom/ModelPart;compile(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
-    private void redirectRenderCuboids(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color){
-        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color);
+    @WrapOperation(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/geom/ModelPart;compile(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"), require = 0) //It might not find anything if OF already broke the game
+    private void redirectRenderCuboids(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color, Operation<Void> original){
+        redirectedFunction(modelPart, entry, vertexConsumer, light, overlay, color, original);
     }
 
     /* // check what they do here
@@ -75,19 +75,21 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
     }*/
 
     @Unique
-    private void redirectedFunction(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+    private void redirectedFunction(ModelPart modelPart, PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color, Operation<Void> original) {
         if(workaround == ModelPartAccessor.Workaround.ExportQuads){
             for(ModelPart.Cube cuboid:cubes){
                 ((CuboidSideAccessor)cuboid).doSideSwapping(); //:D
             }
-            compile(entry, vertexConsumer, light, overlay, color);
+
+            original.call(modelPart, entry, vertexConsumer, light, overlay, color);
+
             for(ModelPart.Cube cuboid:cubes){
                 ((CuboidSideAccessor)cuboid).resetSides(); //:D
             }
         }
         else if(workaround == ModelPartAccessor.Workaround.VanillaDraw){
             if(!hasMutatedCuboid || cubes.size() == 1 && ((MutableCuboid)cubes.get(0)).getActiveMutator() == null){
-                compile(entry, vertexConsumer, light, overlay, color);
+                original.call(modelPart, entry, vertexConsumer, light, overlay, color);
             }
             else {
                 for(ModelPart.Cube cuboid:cubes){
@@ -96,7 +98,7 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
             }
         }
         else {
-            compile(entry, vertexConsumer, light, overlay, color);
+            original.call(modelPart, entry, vertexConsumer, light, overlay, color);
         }
     }
 

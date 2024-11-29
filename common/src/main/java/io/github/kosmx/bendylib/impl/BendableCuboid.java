@@ -3,7 +3,6 @@ package io.github.kosmx.bendylib.impl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kosmx.bendylib.ICuboidBuilder;
-import io.github.kosmx.bendylib.impl.accessors.DirectionMutator;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
 import org.joml.Matrix4f;
@@ -344,7 +343,7 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
                     vertices[2].toMojVertex(),
                     vertices[3].toMojVertex()
             }, u1, v1, u2, v2, su, sv, false, Direction.UP);
-            ((DirectionMutator)quad).bendy_lib$setDirection(this.getDirection());
+            quad.normal().set(this.getDirection());
             return quad;
         }
     }

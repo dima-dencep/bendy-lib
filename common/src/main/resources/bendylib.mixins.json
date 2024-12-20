@@ -5,8 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "CuboidMutator",
-    "IModelPartMixin",
-    "QuadMixin"
+    "IModelPartMixin"
   ],
   "server": [],
   "injectors": {

@@ -29,7 +29,8 @@ public class CuboidMutator implements MutableCuboid, CuboidSideAccessor {
     //Store the mutators and the mutator builders.
 
     @Mutable
-    @Shadow @Final private ModelPart.Polygon[] polygons;
+    @Shadow @Final
+    public ModelPart.Polygon[] polygons;
     @Unique
     private HashMap<String, ICuboid> mutators = new HashMap<>();
 

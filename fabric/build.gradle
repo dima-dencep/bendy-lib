@@ -35,8 +35,6 @@ dependencies {
     modLocalRuntime "com.terraformersmc:modmenu:9.0.0"
     // modLocalRuntime "maven.modrinth:skinswapper:3.12"
 
-    modCompileOnly modLocalRuntime("maven.modrinth:3dskinlayers:1.5.2-1.19.3-fabric")
-
     //modLocalRuntime "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
    // modLocalRuntime "dev.kosmx.player-anim:player-animation-lib-fabric:0.4.0-test1"
     //modLocalRuntime "maven.modrinth:emotecraft:2.2.5-MC1.19.2-fabric"

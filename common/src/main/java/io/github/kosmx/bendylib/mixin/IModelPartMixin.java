@@ -35,6 +35,7 @@ public abstract class IModelPartMixin implements IModelPartAccessor {
      * If needed, use {@link IModelPartAccessor#setWorkaround(ModelPartAccessor.Workaround)} to set the workaround function
      * {@link ModelPartAccessor.Workaround#None} to do nothing about it. It will work in Vanilla, but not with Sodium/OF
      */
+    @Unique
     private ModelPartAccessor.Workaround workaround = ModelPartAccessor.Workaround.VanillaDraw;
 
     @Override

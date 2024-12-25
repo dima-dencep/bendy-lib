@@ -8,6 +8,7 @@ import io.github.kosmx.bendylib.MutableCuboid;
 import io.github.kosmx.bendylib.impl.accessors.CuboidSideAccessor;
 import io.github.kosmx.bendylib.impl.ICuboid;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -55,8 +56,8 @@ public class CuboidMutator implements MutableCuboid, CuboidSideAccessor {
     private String activeMutatorID;
 
     @Inject(method = "<init>", at = @At(value = "RETURN"))
-    private void constructor(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, Set set, CallbackInfo ci){
-        partData = new ICuboidBuilder.Data(u, v, minX, minY, minZ, sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, textureWidth, textureHeight);
+    private void constructor(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, Set<Direction> set, CallbackInfo ci){
+        partData = new ICuboidBuilder.Data(u, v, minX, minY, minZ, sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, textureWidth, textureHeight, set);
         originalQuads = this.polygons;
     }
 

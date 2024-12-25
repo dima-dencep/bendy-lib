@@ -1,6 +1,9 @@
 package io.github.kosmx.bendylib;
 
 import io.github.kosmx.bendylib.impl.ICuboid;
+import net.minecraft.core.Direction;
+
+import java.util.Set;
 
 /**
  * Can be passed as a lambda, get a data, returns a cuboid
@@ -18,13 +21,14 @@ public interface ICuboidBuilder<C extends ICuboid> {
         public float extraX, extraY, extraZ;
         public int u, v;
         public boolean mirror = false;
-        public int textureWidth, textureHeight; //That will be int
+        public float textureWidth, textureHeight; //That will be int
         public int pivot;
         //public float bendX, bendY, bendZ;
+        public Set<Direction> set;
 
         public Data(){}
 
-        public Data(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, int pivot) {
+        public Data(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, Set<Direction> set, int pivot) {
             this.u = u;
             this.v = v;
             this.x = x;
@@ -38,13 +42,13 @@ public interface ICuboidBuilder<C extends ICuboid> {
             this.extraZ = extraZ;
             this.mirror = mirror;
             this.pivot = pivot;
-            //Casting
-            this.textureWidth = (int) textureWidth;
-            this.textureHeight = (int) textureHeight;
+            this.textureWidth = textureWidth;
+            this.textureHeight = textureHeight;
+            this.set = set;
         }
 
-        public Data(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight) {
-            this(u, v, x, y, z, sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, textureWidth, textureHeight, -1);
+        public Data(int u, int v, float x, float y, float z, float sizeX, float sizeY, float sizeZ, float extraX, float extraY, float extraZ, boolean mirror, float textureWidth, float textureHeight, Set<Direction> set) {
+            this(u, v, x, y, z, sizeX, sizeY, sizeZ, extraX, extraY, extraZ, mirror, textureWidth, textureHeight, set, -1);
         }
     }
 }

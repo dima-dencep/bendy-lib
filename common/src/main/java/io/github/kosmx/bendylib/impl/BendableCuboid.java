@@ -146,39 +146,64 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
         public BendableCuboid build(Data data, BuildableBendable builder){
             ArrayList<Quad> planes = new ArrayList<>();
             HashMap<Vector3f, RememberingPos> positions = new HashMap<>();
-            float minX = data.x, minY = data.y, minZ = data.z, maxX = data.x + data.sizeX, maxY = data.y + data.sizeY, maxZ = data.z + data.sizeZ;
-            float pminX = data.x - data.extraX, pminY = data.y - data.extraY, pminZ = data.z - data.extraZ, pmaxX = maxX + data.extraX, pmaxY = maxY + data.extraY, pmaxZ = maxZ + data.extraZ;
+
+            float minX = data.x, minY = data.y, minZ = data.z;
+
+            float maxX = minX + data.sizeX;
+            float maxY = minY + data.sizeY;
+            float maxZ = minZ + data.sizeZ;
+
+            minX -= data.extraX;
+            minY -= data.extraY;
+            minZ -= data.extraZ;
+            maxX += data.extraX;
+            maxY += data.extraY;
+            maxZ += data.extraZ;
+
             if(data.mirror){
-                float tmp = pminX;
-                pminX = pmaxX;
-                pmaxX = tmp;
+                float tmp = maxX;
+                maxX = minX;
+                minX = tmp;
             }
 
             //this is copy from MC's cuboid constructor
-            Vector3f vertex1 = new Vector3f(pminX, pminY, pminZ);
-            Vector3f vertex2 = new Vector3f(pmaxX, pminY, pminZ);
-            Vector3f vertex3 = new Vector3f(pmaxX, pmaxY, pminZ);
-            Vector3f vertex4 = new Vector3f(pminX, pmaxY, pminZ);
-            Vector3f vertex5 = new Vector3f(pminX, pminY, pmaxZ);
-            Vector3f vertex6 = new Vector3f(pmaxX, pminY, pmaxZ);
-            Vector3f vertex7 = new Vector3f(pmaxX, pmaxY, pmaxZ);
-            Vector3f vertex8 = new Vector3f(pminX, pmaxY, pmaxZ);
+            Vector3f vertex1 = new Vector3f(minX, minY, minZ);
+            Vector3f vertex2 = new Vector3f(maxX, minY, minZ);
+            Vector3f vertex3 = new Vector3f(maxX, maxY, minZ);
+            Vector3f vertex4 = new Vector3f(minX, maxY, minZ);
+            Vector3f vertex5 = new Vector3f(minX, minY, maxZ);
+            Vector3f vertex6 = new Vector3f(maxX, minY, maxZ);
+            Vector3f vertex7 = new Vector3f(maxX, maxY, maxZ);
+            Vector3f vertex8 = new Vector3f(minX, maxY, maxZ);
 
-            int j = data.u;
-            int k = (int) (data.u + data.sizeZ);
-            int l = (int) (data.u + data.sizeZ + data.sizeX);
-            int m = (int) (data.u + data.sizeZ + data.sizeX + data.sizeX);
-            int n = (int) (data.u + data.sizeZ + data.sizeX + data.sizeZ);
-            int o = (int) (data.u + data.sizeZ + data.sizeX + data.sizeZ + data.sizeX);
-            int p = data.v;
-            int q = (int) (data.v + data.sizeZ);
-            int r = (int) (data.v + data.sizeZ + data.sizeY);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex6, vertex5, vertex2}, k, p, l, q, data);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex3, vertex4, vertex7}, l, q, m, p, data);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex1, vertex5, vertex4}, j, q, k, r, data);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex2, vertex1, vertex3}, k, q, l, r, data);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex6, vertex2, vertex7}, l, q, n, r, data);
-            createAndAddQuads(planes, positions, new Vector3f[]{vertex5, vertex6, vertex8}, n, q, o, r, data);
+            float j = (float) data.u;
+            float k = (float) data.u + data.sizeZ;
+            float l = (float) data.u + data.sizeZ + data.sizeX;
+            float m = (float) data.u + data.sizeZ + data.sizeX + data.sizeX;
+            float n = (float) data.u + data.sizeZ + data.sizeX + data.sizeZ;
+            float o = (float) data.u + data.sizeZ + data.sizeX + data.sizeZ + data.sizeX;
+            float p = (float) data.v;
+            float q = (float) data.v + data.sizeZ;
+            float r = (float) data.v + data.sizeZ + data.sizeY;
+
+            if (data.set.contains(Direction.DOWN)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex6, vertex5/*, vertex1*/, vertex2}, k, p, l, q, data, Direction.DOWN);
+            }
+            if (data.set.contains(Direction.UP)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex3, vertex4/*, vertex8*/, vertex7}, l, q, m, p, data, Direction.UP);
+            }
+            if (data.set.contains(Direction.WEST)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex1, vertex5/*, vertex8*/, vertex4}, j, q, k, r, data, Direction.WEST);
+            }
+            if (data.set.contains(Direction.NORTH)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex2, vertex1/*, vertex4*/, vertex3}, k, q, l, r, data, Direction.NORTH);
+            }
+            if (data.set.contains(Direction.EAST)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex6, vertex2/*, vertex3*/, vertex7}, l, q, n, r, data, Direction.EAST);
+            }
+            if (data.set.contains(Direction.SOUTH)) {
+                createAndAddQuads(planes, positions, new Vector3f[]{vertex5, vertex6/*, vertex7*/, vertex8}, n, q, o, r, data, Direction.SOUTH);
+            }
 
             Vector3f pivot = new Vector3f(0, 0, 0);
             if (data.pivot >= 0) {
@@ -203,23 +228,24 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
         }
 
         //edge[2] can be calculated from edge 0, 1, 3...
-        private void createAndAddQuads(Collection<Quad> quads, HashMap<Vector3f, RememberingPos> positions, Vector3f[] edges, int u1, int v1, int u2, int v2, Data data){
+        private void createAndAddQuads(Collection<Quad> quads, HashMap<Vector3f, RememberingPos> positions, Vector3f[] edges, float u1, float v1, float u2, float v2, Data data, Direction direction){
             int du = u2 < u1 ? 1 : -1;
             int dv = v1 < v2 ? 1 : -1;
-            for(int localU = u2; localU != u1; localU += du){
-                for(int localV = v1; localV != v2; localV += dv){
-                    int localU2 = localU + du;
-                    int localV2 = localV + dv;
+            for(float localU = u2; localU != u1; localU += du){
+                for(float localV = v1; localV != v2; localV += dv){
+                    float localU2 = localU + du;
+                    float localV2 = localV + dv;
+
                     RememberingPos rp0 = getOrCreate(positions, transformVector(new Vector3f(edges[0]), new Vector3f(edges[1]), new Vector3f(edges[2]), u2, v1, u1, v2, localU2, localV));
                     RememberingPos rp1 = getOrCreate(positions, transformVector(new Vector3f(edges[0]), new Vector3f(edges[1]), new Vector3f(edges[2]), u2, v1, u1, v2, localU2, localV2));
                     RememberingPos rp2 = getOrCreate(positions, transformVector(new Vector3f(edges[0]), new Vector3f(edges[1]), new Vector3f(edges[2]), u2, v1, u1, v2, localU, localV2));
                     RememberingPos rp3 = getOrCreate(positions, transformVector(new Vector3f(edges[0]), new Vector3f(edges[1]), new Vector3f(edges[2]), u2, v1, u1, v2, localU, localV));
-                    quads.add(new Quad(new RememberingPos[]{rp3, rp0, rp1, rp2}, localU2, localV, localU, localV2, data.textureWidth, data.textureHeight, data.mirror));
+                    quads.add(new Quad(new RememberingPos[]{rp3, rp0, rp1, rp2}, localU2, localV, localU, localV2, data.textureWidth, data.textureHeight, data.mirror, direction));
                 }
             }
         }
 
-        Vector3f transformVector(Vector3f pos, Vector3f vectorU, Vector3f vectorV, int u1, int v1, int u2, int v2, int u, int v){
+        Vector3f transformVector(Vector3f pos, Vector3f vectorU, Vector3f vectorV, float u1, float v1, float u2, float v2, float u, float v){
             vectorU.sub(pos);
             vectorU.mul(((float)u - u1)/(u2-u1));
             vectorV.sub(pos);
@@ -269,8 +295,24 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
 
     @Override
     public void render(PoseStack.Pose matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-        for(Quad quad:sides){
-            quad.render(matrices, vertexConsumer, light, overlay, color);
+        Matrix4f matrix4f = matrices.pose();
+        Vector3f vector3f = new Vector3f();
+
+        for(Quad polygon : this.sides) {
+            Vector3f vector3f2 = matrices.transformNormal(polygon.getDirection(), vector3f);
+            float f = vector3f2.x();
+            float g = vector3f2.y();
+            float h = vector3f2.z();
+
+            for(IVertex vertex : polygon.vertices) {
+                Vector3f vertexPos = vertex.getPos();
+                float l = vertexPos.x() / 16.0F;
+                float m = vertexPos.y() / 16.0F;
+                float n = vertexPos.z() / 16.0F;
+
+                Vector3f vector3f3 = matrix4f.transformPosition(l, m, n, vector3f);
+                vertexConsumer.addVertex(vector3f3.x(), vector3f3.y(), vector3f3.z(), color, vertex.getU(), vertex.getV(), overlay, light, f, g, h);
+            }
         }
     }
 
@@ -290,10 +332,12 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
      * with IVertex and render()
      */
     public static class Quad{
+        public final Vector3f normal;
         public final IVertex[] vertices;
         final float u1, u2, v1, v2, su, sv;
 
-        public Quad(RememberingPos[] vertices, float u1, float v1, float u2, float v2, float squishU, float squishV, boolean flip){
+        public Quad(RememberingPos[] vertices, float u1, float v1, float u2, float v2, float squishU, float squishV, boolean flip, Direction direction){
+            this.normal = direction.step();
             this.u1 = u1; this.u2 = u2; this.v1 = v1; this.v2 = v2; su = squishU; sv = squishV;
             float f = 0/squishU;
             float g = 0/squishV;
@@ -311,7 +355,12 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
                     this.vertices[i - 1 - j] = vertex;
                 }
             }
+            if (flip) {
+                this.normal.mul(-1.0F, 1.0F, 1.0F);
+            }
         }
+
+        @Deprecated(forRemoval = true)
         public void render(PoseStack.Pose matrices, VertexConsumer vertexConsumer, int light, int overlay, int color){
             Vector3f direction = this.getDirection();
             direction.mul(matrices.normal());
@@ -330,7 +379,7 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
          * @return the normal vector (direction)
          */
         private Vector3f getDirection(){
-            Vector3f buf = new Vector3f(vertices[3].getPos());
+            /*Vector3f buf = new Vector3f(vertices[3].getPos());
             buf.mul(-1);
             Vector3f vecB = new Vector3f(vertices[1].getPos());
             vecB.add(buf);
@@ -340,7 +389,8 @@ public class BendableCuboid implements ICuboid, IBendable, IterableRePos {
             vecA.add(buf);
             vecA.cross(vecB);
             // Return the cross product, if it's zero then return anything non-zero to not cause crash...
-            return vecA.normalize().isFinite() ? vecA : Direction.NORTH.step();
+            return vecA.normalize().isFinite() ? vecA : Direction.NORTH.step();*/
+            return this.normal;
         }
 
         @SuppressWarnings({"ConstantConditions"})
